@@ -24,7 +24,7 @@ public class ThreadPassenger extends Thread {
 		while (true)
 		{
 			// TENTA ACESSAR O VISITAR ANDAR DO ELEVADOR
-			predio.AddPassageriro(this, currentFloor);
+			predio.AddPassageriro(this, currentFloor, destinyFloor);
 			
 			/*
 			try {

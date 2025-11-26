@@ -22,8 +22,10 @@ public class Predio
 		elevator.start();
 	}
 	
-	public void AddPassageriro(ThreadPassenger passageiro, int andar)
+	public void AddPassageriro(ThreadPassenger passageiro, int andarAtual, int andarDestino)
 	{
+		elevator.ChecarDisponibilidade();
+		
 		if(elevator.isAvailable)
 		{
 			if(elevator.isAvailable)
@@ -38,9 +40,12 @@ public class Predio
 				}
 				
 				elevator.passageiros++;
-				elevator.VisitarAndar(andar);
+				elevator.VisitarAndar(andarAtual);
+				elevator.Embarcar(andarDestino);
 				
-				PredioLog("SEMÁFORO DO PRÉDIO: " + passageiro.passengerName + "     Indo para o andar: " + andar);
+				PredioLog("SEMÁFORO DO PRÉDIO: " + passageiro.passengerName + "     Em: " + andarAtual + "     Indo para o andar: " + andarDestino);
+				
+				// Release é chamado pela função ReleaseSemaphore, garantindo que só será chamada quando o elevador liberar 1 epaço
 			}
 		}
 	}
