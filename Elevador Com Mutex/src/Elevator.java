@@ -1,45 +1,73 @@
 import java.util.List;
 import java.util.ArrayList;
 
-public class Elevator {
-	
+public class Elevator extends Thread
+{	
 	public float posY;
-	
 	public int currentFloor;
-	public List<Integer> nextFloor = new ArrayList<>();
-	public Integer currentNextFloorIndex = 0;
-	
+	public int passageiros;
 	public boolean isAvailable = true;
 	
 	Main main = new Main();
 	
-	public void GetPassenger(ThreadPassenger passenger)
+	// Construtor da thread
+	public Elevator(Predio predio)
+	{		
+		// Começa sempre no andar 0
+		VisitarAndar(0);
+		AbrirPorta();
+	}
+	
+	@Override
+	public void run()
 	{
-		// TODO: Movement logic
-		
-		if(nextFloor.size() < 3)
-		{
-			currentFloor = passenger.currentFloor;
-			nextFloor.add(passenger.destinyFloor);
-			
-			currentNextFloorIndex++;
-			
-			System.out.println("Elevador em: " + currentFloor 
-					+ "     Próximo Destino: " + nextFloor
-					+ "     Passageiro Atual: " + passenger.passengerName);
-		}
-		else
-		{
-			isAvailable = false;
-			System.out.println("ELEVADOR ESTÁ LOTADO!");
-		}
+		super.run();
+	}
+	
+	public void Embarcar(int proximoAndar)
+	{
 		
 	}
 	
-	public void DeliverPassenger()
+	public void Desembarcar()
+	{
+		AbrirPorta();
+		passageiros--;
+		FecharPorta();
+		VisitarAndar(1);
+	}
+	
+	public void AbrirPorta()
+	{
+		// TODO: Visual logic
+		LogElevador("Porta abriu.");
+		
+		FecharPorta();
+	}
+	
+	public void FecharPorta()
+	{
+		// TODO: Visual logic
+		LogElevador("Porta fechou.");
+		
+	}
+	
+	public void VisitarAndar(int numAndar)
 	{
 		// TODO: Movement logic
 		
-		currentFloor = nextFloor.get(currentNextFloorIndex);
+		if(isAvailable)
+		{
+			currentFloor = numAndar;
+		}
+		
+		LogElevador("Elevador em: " + currentFloor);
+		
+		AbrirPorta();
+	}
+	
+	public void LogElevador(String message)
+	{
+		System.out.println(message);
 	}
 }

@@ -1,25 +1,43 @@
 import java.util.Random;
 
-public class ThreadPassenger extends Thread {
-	// Gets Main reference for floors
-	Main main = new Main ();
-			
+public class ThreadPassenger extends Thread {			
 	// Atributos do passageiro
+	public String passengerName;
 	public int currentFloor;
-	public int currentPosition;
 	public int destinyFloor;
+	
+	Predio predio;
 	
 	// Instância da classe random para gerar valores aleatórios
 	Random random = new Random();
 	
+	// CONSTRUTOR
+	public ThreadPassenger(Predio pred)
+	{
+		predio = pred;
+		SetRandomFloor(pred.andares);
+	}
+	
 	@Override
 	public void run()
 	{
-		SetRandomFloor(main.maxFloors);
-		PassengerLog();
+		while (true)
+		{
+			// TENTA ACESSAR O VISITAR ANDAR DO ELEVADOR
+			predio.AddPassageriro(this, currentFloor);
+			
+			/*
+			try {
+			    Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			    e.printStackTrace();
+			}
+			*/
+		}
+		
 	}
 	
-	// FUNCTIONS
+	// FUNÇÕES
 	public void SetRandomFloor(int maxFloors)
 	{
 		currentFloor = random.nextInt(maxFloors + 1);
@@ -29,6 +47,7 @@ public class ThreadPassenger extends Thread {
 	
 	public void PassengerLog()
 	{
-		System.out.println("Piso atual: " + currentFloor + "     Destino: " + destinyFloor);
+		System.out.println(passengerName + "     Piso atual: " + currentFloor 
+				+ "     Destino: " + destinyFloor);
 	}
 }

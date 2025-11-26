@@ -1,24 +1,26 @@
+import java.util.concurrent.Semaphore;
 
 public class Main {
 	
 	// Define a quantidade de pisos que serão gerados
-	public static int maxFloors = 5;
+	public static int maxPassengers = 10;
+	
 	
 	public static void main(String args[])
 	{
-		// ATRIBUTOS
-		// Define o número máximo de passageiros NOS ANDARES
-		int maxPassengers = 5;
+		// THREADS DE PASSAGEIROS
+		ThreadPassenger[] passengerThread = new ThreadPassenger[10];
 		
-		
-		// Cria as threads dos passageiros
-		ThreadPassenger[] passengerThread = new ThreadPassenger[maxPassengers];
-		
+		// PREDIO
+		Predio predio = new Predio();
+				
 		for (int i = 0; i < passengerThread.length; i++)
 		{
-			passengerThread[i] = new ThreadPassenger();
+			passengerThread[i] = new ThreadPassenger(predio);
 			
+			passengerThread[i].passengerName = "Passageiro_0" + i;			
 			passengerThread[i].start();
 		}
+		// FIM DE THREADS DE PASSAGEIROS
 	}
 }
