@@ -7,12 +7,13 @@ public class Elevator extends Thread
 	
 	public float posY;
 	public int currentFloor;
-	public int passageiros;
-	public int maxPassageiros = 1;
 	public boolean isAvailable = true;
 	
 	// PASSAGEIROS
+	public int passageiros;
+	public int maxPassageiros = 1;
 	public int andarDestino; // TODO: Transformar isso em uma lista para caber mais de 1 passageiro
+	public ThreadPassenger passageiro;
 	
 	Main main = new Main();
 	
@@ -31,22 +32,14 @@ public class Elevator extends Thread
 		super.run();
 	}
 	
-	public void Embarcar(int proximoAndar)
+	public void Embarcar(ThreadPassenger pas, int proximoAndar)
 	{
+		passageiro = pas;
+		
 		passageiros++;
-		VisitarAndar(proximoAndar);
-	}
-	
-	public void Desembarcar()
-	{
-		AbrirPorta();
-		passageiros--;
-		FecharPorta();
 		
-		predio.ReleaseSemaphore();
-		
-		ChecarDisponibilidade();
-		VisitarAndar(1);
+		andarDestino = proximoAndar;
+		VisitarAndar(andarDestino);
 	}
 	
 	public void ChecarDisponibilidade()
@@ -66,9 +59,13 @@ public class Elevator extends Thread
 		// TODO: Visual logic
 		Log("Porta abriu.");
 		
-		if(currentFloor == andarDestino)
-		
-		FecharPorta();
+		if(passageiro != null)
+		{
+			if(currentFloor == andarDestino)
+			{
+				Desembarcar();
+			}	
+		}
 	}
 	
 	public void FecharPorta()
@@ -80,13 +77,26 @@ public class Elevator extends Thread
 	
 	public void VisitarAndar(int numAndar)
 	{
-		// TODO: Movement logic
+		FecharPorta();
 		
+		// TODO: Movement logic	
 		currentFloor = numAndar;
-		
 		Log("Elevador em: " + currentFloor);
 		
 		AbrirPorta();
+	}
+	
+	public void Desembarcar()
+	{
+		//AbrirPorta();
+		passageiro.chegouDestino = true;
+		passageiros--;
+		Log("Passageiro desceu.");
+		
+		predio.ReleaseSemaphore();
+		
+		ChecarDisponibilidade();
+		VisitarAndar(1);
 	}
 	
 	public void Log(String message)

@@ -6,6 +6,8 @@ public class ThreadPassenger extends Thread {
 	public int currentFloor;
 	public int destinyFloor;
 	
+	public boolean chegouDestino;
+	
 	Predio predio;
 	
 	// Instância da classe random para gerar valores aleatórios
@@ -21,7 +23,7 @@ public class ThreadPassenger extends Thread {
 	@Override
 	public void run()
 	{
-		while (true)
+		while (chegouDestino == false)
 		{
 			// TENTA ACESSAR O VISITAR ANDAR DO ELEVADOR
 			predio.AddPassageriro(this, currentFloor, destinyFloor);

@@ -15,7 +15,7 @@ public class Predio
 	{
 		// Configura propriedades do predio
 		andares = 5;
-		semaforo = new Semaphore (1);
+		semaforo = new Semaphore(1);
 		
 		// Instancia 1 elevador e o inicia
 		elevator = new Elevator(this);
@@ -41,7 +41,7 @@ public class Predio
 				
 				elevator.passageiros++;
 				elevator.VisitarAndar(andarAtual);
-				elevator.Embarcar(andarDestino);
+				elevator.Embarcar(passageiro, andarDestino);
 				
 				PredioLog("SEMÁFORO DO PRÉDIO: " + passageiro.passengerName + "     Em: " + andarAtual + "     Indo para o andar: " + andarDestino);
 				
