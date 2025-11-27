@@ -13,11 +13,10 @@ public class Elevator extends Thread
 	public int qtdPassageiros;
 	public int maxPassageiros;
 	
-	public int indexPassageiro;
-	public List<ThreadPassenger> listaPassageiros = new ArrayList<>();
+	public ThreadPassenger[] p;
+	public int pA;
 	
 	public int andarDestino; // TODO: Transformar isso em uma lista para caber mais de 1 passageiro
-	public ThreadPassenger passageiro;
 	
 	Main main = new Main();
 	
@@ -26,6 +25,9 @@ public class Elevator extends Thread
 	{		
 		predio = pred;
 		maxPassageiros = pred.maxPassageiros;
+		
+		p = new ThreadPassenger[maxPassageiros];
+		pA = 0;
 		
 		// Começa sempre no andar 0
 		VisitarAndar(0);
@@ -37,18 +39,7 @@ public class Elevator extends Thread
 		super.run();
 	}
 	
-	public void Embarcar(ThreadPassenger pas, int proximoAndar)
-	{
-		Log("PASSAGEIRO ADICIONADO: " + pas.passengerName + "     Em: " + currentFloor + "     Indo para o andar: " + proximoAndar);
-		
-		listaPassageiros.add(pas);
-		
-		qtdPassageiros++;
-		indexPassageiro++;
-		
-		andarDestino = proximoAndar;
-		VisitarAndar(andarDestino);
-	}
+	// FUNÇÕES DO ELEVADOR
 	
 	public void ChecarDisponibilidade()
 	{
@@ -64,26 +55,19 @@ public class Elevator extends Thread
 		// Log("isAvailable = " + isAvailable);
 	}
 	
-	public void AbrirPorta()
+	public void Embarcar(ThreadPassenger pas, int proximoAndar)
 	{
-		// TODO: Visual logic
-		Log("Porta abriu.");
+		Log("PASSAGEIRO ADICIONADO: " + pas.passengerName + "     Em: " + currentFloor + "     Indo para o andar: " + proximoAndar);
 		
-		if(passageiro != null)
-		{
-			if(currentFloor == andarDestino)
-			{
-				Desembarcar();
-			}	
-		}
+		AddPassageiro(pas);
+		
+		qtdPassageiros++;
+		
+		andarDestino = proximoAndar;
+		VisitarAndar(andarDestino);
 	}
 	
-	public void FecharPorta()
-	{
-		// TODO: Visual logic
-		Log("Porta fechou.");
-		
-	}
+
 	
 	public void VisitarAndar(int numAndar)
 	{
@@ -99,15 +83,61 @@ public class Elevator extends Thread
 	public void Desembarcar()
 	{
 		//AbrirPorta();
-		passageiro.chegouDestino = true;
+		
 		qtdPassageiros--;
+		RemoverPassageiro();
+		ChecarDisponibilidade();
+		
 		Log("Passageiro desceu.");
 		
 		predio.ReleaseSemaphore();
 		
-		ChecarDisponibilidade();
 		VisitarAndar(1);
 	}
+	
+	
+	
+	void AddPassageiro(ThreadPassenger pas)
+	{
+		p[pA] = pas;
+	}
+	
+	void RemoverPassageiro()
+	{
+		p[pA] = null;
+		
+		if(pA < p.length - 1)
+		{
+			pA++;
+		}
+		else
+		{
+			pA = 0;
+		}
+	}
+	
+	public void AbrirPorta()
+	{
+		// TODO: Visual logic
+		Log("Porta abriu.");
+		
+		if(p[pA] != null)
+		{
+			if(currentFloor == andarDestino)
+			{
+				Desembarcar();
+			}	
+		}
+	}
+	
+	public void FecharPorta()
+	{
+		// TODO: Visual logic
+		Log("Porta fechou.");
+		
+	}
+	
+	
 	
 	public void Log(String message)
 	{

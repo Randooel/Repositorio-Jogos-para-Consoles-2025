@@ -37,6 +37,8 @@ public class ThreadPassenger extends Thread {
 			    e.printStackTrace();
 			}
 		}
+		String estadoThread = getState().toString();
+		System.out.println("ESTADO DO: " + passengerName + estadoThread);
 		
 	}
 	
