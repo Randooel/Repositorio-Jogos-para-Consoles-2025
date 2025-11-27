@@ -10,8 +10,12 @@ public class Elevator extends Thread
 	public boolean isAvailable = true;
 	
 	// PASSAGEIROS
-	public int passageiros;
-	public int maxPassageiros = 1;
+	public int qtdPassageiros;
+	public int maxPassageiros;
+	
+	public int indexPassageiro;
+	public List<ThreadPassenger> listaPassageiros = new ArrayList<>();
+	
 	public int andarDestino; // TODO: Transformar isso em uma lista para caber mais de 1 passageiro
 	public ThreadPassenger passageiro;
 	
@@ -21,6 +25,7 @@ public class Elevator extends Thread
 	public Elevator(Predio pred)
 	{		
 		predio = pred;
+		maxPassageiros = pred.maxPassageiros;
 		
 		// Começa sempre no andar 0
 		VisitarAndar(0);
@@ -34,9 +39,12 @@ public class Elevator extends Thread
 	
 	public void Embarcar(ThreadPassenger pas, int proximoAndar)
 	{
-		passageiro = pas;
+		Log("PASSAGEIRO ADICIONADO: " + pas.passengerName + "     Em: " + currentFloor + "     Indo para o andar: " + proximoAndar);
 		
-		passageiros++;
+		listaPassageiros.add(pas);
+		
+		qtdPassageiros++;
+		indexPassageiro++;
 		
 		andarDestino = proximoAndar;
 		VisitarAndar(andarDestino);
@@ -44,7 +52,7 @@ public class Elevator extends Thread
 	
 	public void ChecarDisponibilidade()
 	{
-		if(passageiros < maxPassageiros)
+		if(qtdPassageiros < maxPassageiros)
 		{
 			isAvailable = true;
 		}
@@ -52,6 +60,8 @@ public class Elevator extends Thread
 		{
 			isAvailable = false;
 		}
+		
+		// Log("isAvailable = " + isAvailable);
 	}
 	
 	public void AbrirPorta()
@@ -90,7 +100,7 @@ public class Elevator extends Thread
 	{
 		//AbrirPorta();
 		passageiro.chegouDestino = true;
-		passageiros--;
+		qtdPassageiros--;
 		Log("Passageiro desceu.");
 		
 		predio.ReleaseSemaphore();

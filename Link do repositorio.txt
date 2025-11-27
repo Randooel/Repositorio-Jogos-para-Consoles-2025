@@ -1,0 +1,2 @@
+Link do repositorio - Favor acessar a branch "Elevador com Mutex":
+https://github.com/Randooel/Repositorio-Jogos-para-Consoles-2025.git

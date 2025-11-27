@@ -28,13 +28,14 @@ public class ThreadPassenger extends Thread {
 			// TENTA ACESSAR O VISITAR ANDAR DO ELEVADOR
 			predio.AddPassageriro(this, currentFloor, destinyFloor);
 			
-			/*
-			try {
+			try 
+			{
 			    Thread.sleep(1000);
-			} catch (InterruptedException e) {
+			} 
+			catch (InterruptedException e)
+			{
 			    e.printStackTrace();
 			}
-			*/
 		}
 		
 	}
@@ -45,6 +46,19 @@ public class ThreadPassenger extends Thread {
 		currentFloor = random.nextInt(maxFloors + 1);
 		
 		destinyFloor = random.nextInt(maxFloors + 1);
+		
+		// Evita que o passageiro sorteie, como destino, o mesmo andar em que já está
+		if(destinyFloor == currentFloor)
+		{
+			if(currentFloor < maxFloors)
+			{
+				destinyFloor++;
+			}
+			else
+			{
+				destinyFloor--;
+			}
+		}
 	}
 	
 	public void PassengerLog()
