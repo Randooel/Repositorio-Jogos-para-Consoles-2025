@@ -104,6 +104,7 @@ public class Elevator extends Thread
 	
 	void RemoverPassageiro()
 	{
+		p[pA].chegouDestino = true;
 		p[pA] = null;
 		
 		if(pA < p.length - 1)
