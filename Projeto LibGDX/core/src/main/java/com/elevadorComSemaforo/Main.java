@@ -12,36 +12,41 @@ public class Main extends ApplicationAdapter {
     
  // Define a quantidade de pisos que serão gerados
  	public static int maxPassengers = 10;
- 	
- 	public static void main(String args[])
- 	{
- 		// THREADS DE PASSAGEIROS
- 		ThreadPassenger[] passengerThread = new ThreadPassenger[10];
- 		
- 		// PREDIO
- 		Predio predio = new Predio();
- 				
- 		for (int i = 0; i < passengerThread.length; i++)
- 		{
- 			passengerThread[i] = new ThreadPassenger(predio);
- 			
- 			passengerThread[i].passengerName = "Passageiro_0" + i;			
- 			passengerThread[i].start();
- 		}
- 		// FIM DE THREADS DE PASSAGEIROS
- 	}
+ 	ThreadPassenger[] passengerThread;
 
     @Override
-    public void create() {
+    public void create() 
+    {
         batch = new SpriteBatch();
         image = new Texture("libgdx.png");
+        
+        // THREADS DE PASSAGEIROS
+        passengerThread = new ThreadPassenger[10];
+  		
+        // PREDIO
+        Predio predio = new Predio();
+  				
+        for (int i = 0; i < passengerThread.length; i++)
+        {
+        	passengerThread[i] = new ThreadPassenger(predio);
+  			
+        	passengerThread[i].passengerName = "Passageiro_0" + i;			
+        	passengerThread[i].start();
+        }
     }
 
     @Override
     public void render() {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        
         batch.begin();
         batch.draw(image, 140, 210);
+        
+     // Desenhando threads de passageiros
+        for(int i = 0; i < passengerThread.length; i++)
+        {
+        	batch.draw(passengerThread[i].sprite, passengerThread[i].sprite.getX(), passengerThread[i].sprite.getY());
+        }
         batch.end();
     }
 

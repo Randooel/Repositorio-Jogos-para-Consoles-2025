@@ -1,8 +1,19 @@
 package com.elevadorComSemaforo;
 
 import java.util.Random;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 
 public class ThreadPassenger extends Thread {			
+	
+	// Visual
+	Texture texture;
+	Sprite sprite;
+	Vector2 speed;
+	
 	// Atributos do passageiro
 	public String passengerName;
 	public int currentFloor;
@@ -20,6 +31,18 @@ public class ThreadPassenger extends Thread {
 	{
 		predio = pred;
 		SetRandomFloor(pred.andares);
+		
+		// Associando imagem à textura e textura ao sprite
+		//texture = new Texture("Passageiro.png");
+		
+		System.out.println("Internal files root: " + Gdx.files.getLocalStoragePath());
+
+		FileHandle[] list = Gdx.files.internal("").list();
+		for (FileHandle fh : list) {
+		    System.out.println("Found in assets: " + fh.name());
+		}
+		
+		sprite = new Sprite(new Texture("Passageiro.png"));
 	}
 	
 	@Override
