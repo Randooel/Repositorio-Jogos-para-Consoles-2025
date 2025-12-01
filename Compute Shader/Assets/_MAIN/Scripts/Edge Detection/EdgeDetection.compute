@@ -1,42 +1,28 @@
 #pragma kernel CSMain
 
-// Texturas e entrada e saíd
-Texture2D<float4> InputTex;
 RWTexture2D<float4> Result;
+Texture2D<float4> InputTex;
 
-// Dimensões da textura
 int width;
 int height;
 
 [numthreads(8, 8, 1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= width || id.y >= height) return;
+    int x = id.x;
+    int y = id.y;
 
-    float3 sample[9];
-    int i = 0;
-
-    for (int oy = -1; oy <= 1; oy++)
+    if (x <= 0 || x >= width - 1 || y <= 0 || y >= height - 1)
     {
-        for (int ox = -1; ox <= 1; ox++)
-        {
-            uint2 pos = uint2(
-                clamp(id.x + ox, 0, width - 1),
-                clamp(id.y + oy, 0, height - 1)
-            );
-
-            sample[i] = InputTex[pos].rgb;
-            i++;
-        }
+        Result[id.xy] = float4(0, 0, 0, 1);
+        return;
     }
 
-    float3 gx = sample[2] + 2 * sample[5] + sample[8] -
-                (sample[0] + 2 * sample[3] + sample[6]);
+    float3 c  = InputTex[int2(x, y)].rgb;
+    float3 cx = InputTex[int2(x + 1, y)].rgb - InputTex[int2(x - 1, y)].rgb;
+    float3 cy = InputTex[int2(x, y + 1)].rgb - InputTex[int2(x, y - 1)].rgb;
 
-    float3 gy = sample[0] + 2 * sample[1] + sample[2] -
-                (sample[6] + 2 * sample[7] + sample[8]);
+    float edge = length(cx) + length(cy);
 
-    float3 edge = sqrt(gx * gx + gy * gy);
-
-    Result[id.xy] = float4(edge, 1.0);
+    Result[int2(x, y)] = float4(edge.xxx, 1.0);
 }
