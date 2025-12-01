@@ -1,0 +1,42 @@
+#pragma kernel CSMain
+
+// Texturas e entrada e saíd
+Texture2D<float4> InputTex;
+RWTexture2D<float4> Result;
+
+// Dimensões da textura
+int width;
+int height;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= width || id.y >= height) return;
+
+    float3 sample[9];
+    int i = 0;
+
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            uint2 pos = uint2(
+                clamp(id.x + ox, 0, width - 1),
+                clamp(id.y + oy, 0, height - 1)
+            );
+
+            sample[i] = InputTex[pos].rgb;
+            i++;
+        }
+    }
+
+    float3 gx = sample[2] + 2 * sample[5] + sample[8] -
+                (sample[0] + 2 * sample[3] + sample[6]);
+
+    float3 gy = sample[0] + 2 * sample[1] + sample[2] -
+                (sample[6] + 2 * sample[7] + sample[8]);
+
+    float3 edge = sqrt(gx * gx + gy * gy);
+
+    Result[id.xy] = float4(edge, 1.0);
+}
