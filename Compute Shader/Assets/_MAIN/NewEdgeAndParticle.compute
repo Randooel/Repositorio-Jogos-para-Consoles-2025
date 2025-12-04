@@ -1,0 +1,11 @@
+#pragma kernel CSControl
+
+Texture2D<float4> sourceImage;
+RWTexture2D<float4> Result;
+
+[numthreads(8,8,1)]
+void CSControl (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = sourceImage[id.xy];
+    Result[id.xy] = pixel;
+}
