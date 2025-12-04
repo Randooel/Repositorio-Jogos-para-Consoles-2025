@@ -750,7 +750,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 94d9590cb200b9a49a17fb5bc4c7bf51, type: 2}
+  - {fileID: 2100000, guid: 2aa56e8e0c4df144a88d7ac3677eac79, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -787,14 +787,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1075096831}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c32034d2b5924794d9aefa735da43cd9, type: 3}
+  m_Script: {fileID: 11500000, guid: b15fb5e02b198df4481c9ebac535e00d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  computeShader: {fileID: 7200000, guid: 39f926500e513854883bf18a38f863d4, type: 3}
-  sprite: {fileID: 21300000, guid: 9b05a96383c80c9409d9533c7eb9fa78, type: 3}
-  material: {fileID: 2100000, guid: 09a07b27333985444b37357a3b64f7f1, type: 2}
+  computeShader: {fileID: 0}
+  texture: {fileID: 0}
+  targetMaterial: {fileID: 0}
   renderTexture: {fileID: 0}
 --- !u!1 &1825471528
 GameObject:
@@ -1174,9 +1174,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b52cea737bbcf4145b1d98c4b8b49f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  computeShader: {fileID: 7200000, guid: 8291cd32b3c2c5b41bef2b623e6fa50e, type: 3}
-  inputSprite: {fileID: 21300000, guid: 9b05a96383c80c9409d9533c7eb9fa78, type: 3}
-  outputMaterial: {fileID: 2100000, guid: 09a07b27333985444b37357a3b64f7f1, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
