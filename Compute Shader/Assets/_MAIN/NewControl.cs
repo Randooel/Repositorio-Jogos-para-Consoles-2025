@@ -4,10 +4,9 @@ public class NewControl : MonoBehaviour
 {
     [Header("Compute Shader")]
     public ComputeShader computeShader;
-    // public int targetKernel;
+    public string kernelName;
 
     [Header("Texture Related")]
-    [Space(10)]
     public Sprite texture;
     public Material targetMaterial;
 
@@ -24,7 +23,7 @@ public class NewControl : MonoBehaviour
         renderTexture.Create();
 
         // Defino o kernel que vou usar
-        var kernel = computeShader.FindKernel("CSControl");
+        var kernel = computeShader.FindKernel(kernelName);
         // Passa a textura para "sourceImage" do Compute Shader
         computeShader.SetTexture(kernel, "sourceImage", inputTex);
         // Atribui a "resultTexture" à variável "Result" do CS
