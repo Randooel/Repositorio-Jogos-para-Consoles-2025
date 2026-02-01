@@ -825,7 +825,23 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: SORTIFY
+    EmbeddedLinux: SORTIFY
+    GameCoreScarlett: SORTIFY
+    GameCoreXboxOne: SORTIFY
+    Kepler: SORTIFY
+    LinuxHeadlessSimulation: SORTIFY
+    Nintendo Switch: SORTIFY
+    PS4: SORTIFY
+    PS5: SORTIFY
+    QNX: SORTIFY
+    ReservedCFE: SORTIFY
+    Standalone: SORTIFY;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3
+    VisionOS: SORTIFY
+    WebGL: SORTIFY
+    XboxOne: SORTIFY
+    tvOS: SORTIFY
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
