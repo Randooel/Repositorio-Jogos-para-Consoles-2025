@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using RangeAttribute = UnityEngine.RangeAttribute;
+using UnityEngine.VFX;
 
 public class ParticlesManager : MonoBehaviour
 {
@@ -119,12 +120,7 @@ public class ParticlesManager : MonoBehaviour
     #region CPU vs GPU Related Functions
     private void ActivateCPU()
     {
-        _moveWithCPU = true; // Now, MoveWithCPU function will be called automatically by the FixedUpdate
-
-        foreach (var p in ParticlesList)
-        {
-            p.SetDirection();
-        }
+        _moveWithCPU = true;
     }
 
     private void ActivateGPU()
@@ -139,7 +135,44 @@ public class ParticlesManager : MonoBehaviour
     {
         foreach (var p in ParticlesList)
         {
-            p.transform.position += p.Direction * p.Speed * Time.deltaTime;
+            Transform t = p.transform;
+            var deslocation = p.Speed * Time.deltaTime;
+            t.Translate(new Vector3(deslocation, deslocation, deslocation));
+
+            // Checa colisão contra as paredes
+            if (t.position.x < p.minSpace.x || t.position.y > p.minSpace.y || t.position.z  < p.minSpace.z ||
+                t.position.x > p.maxSpace.x || t.position.y > p.maxSpace.y || t.position.z  > p.maxSpace.z)
+            {
+                // Inverte a direção e rotaciona aleatoriamente
+                t.rotation = Quaternion.LookRotation(-t.forward);
+                t.Rotate(Vector3.up, Random.Range(-30f, 30f));
+
+                // Empurra um pouco para fora da parede para evitar prender
+                t.Translate(new Vector3(0, 0, 0.5f));
+            }
+
+            /*
+            // WIP: Checar colisão com obstáculos estáticos
+            foreach (Transform ss in ParticlesList)
+            {
+                Vector3 dir = t.position - ss.position;
+                dir.y = 0;
+                float distanceSqr = dir.sqrMagnitude;
+                float combinedRadius = staticSphereRadius + r;
+
+                // Usando sqrMagnitude para performance (compara com raio ao quadrado)
+                if (distanceSqr < combinedRadius * combinedRadius)
+                {
+                    // Rotaciona para olhar para longe da esfera estática
+                    t.rotation = Quaternion.LookRotation(dir.normalized);
+
+                    // Reposiciona para fora da colisão
+                    float overlap = combinedRadius - Mathf.Sqrt(distanceSqr);
+                    t.Translate(new Vector3(0, 0, overlap));
+                    break;
+                }
+            }
+            */
         }
     }
 
@@ -149,7 +182,4 @@ public class ParticlesManager : MonoBehaviour
     }
     #endregion
     #endregion
-
-
-
 }

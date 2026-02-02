@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using System.Collections;
+using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 public class ParticleClass : MonoBehaviour
@@ -12,30 +13,16 @@ public class ParticleClass : MonoBehaviour
     public Vector3 Position;
     [Range(1, 300)] public float Speed = 10f;
     public float Acceleration;
-    [ReadOnly] public Vector3 Direction;
-    public float Delay = 60f;
+
+    [Space(20)]
+    public Vector3 minSpace = new Vector3(-1000, -1000, -1000);
+    public Vector3 maxSpace = new Vector3(1000, 1000, 1000);
     #endregion
 
 
     private void Start()
     {
+        
         GetComponent<SpriteRenderer>().sprite = Visual;
     }
-
-    public void SetDirection()
-    {
-        // Gera uma direção aleatória
-        float magnitude = 1f;
-        Direction = new Vector3(Random.Range(-magnitude, magnitude), Random.Range(-magnitude, magnitude), 0).normalized;
-
-        StartCoroutine(WaitToSetDirection());
-    }
-
-    #region COROUTINES
-    private IEnumerator WaitToSetDirection()
-    {
-        yield return new WaitForSeconds(Delay);
-        SetDirection();
-    }
-    #endregion
 }
