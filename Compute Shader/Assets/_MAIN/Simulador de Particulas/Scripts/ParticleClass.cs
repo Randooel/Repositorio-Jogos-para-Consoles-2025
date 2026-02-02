@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using DG.Tweening;
+using Sirenix.OdinInspector;
 using System.Collections;
 using UnityEngine;
 
@@ -10,10 +11,8 @@ public class ParticleClass : MonoBehaviour
 
     [Title("Transform Related")]
     public Vector3 Position;
-    [Range(1, 300)] public float Speed = 10f;
+    [Range(1, 300)] public float Speed = 100f;
     public float Acceleration;
-    [ReadOnly] public Vector3 Direction;
-    public float Delay = 60f;
     #endregion
 
 
@@ -22,20 +21,14 @@ public class ParticleClass : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = Visual;
     }
 
-    public void SetDirection()
+    public void RandomMove()
     {
-        // Gera uma direção aleatória
-        float magnitude = 1f;
-        Direction = new Vector3(Random.Range(-magnitude, magnitude), Random.Range(-magnitude, magnitude), 0).normalized;
+        var magnitude = 1000000000f;
+        Vector3 randomDirection = new Vector3(Random.Range(-magnitude, magnitude), Random.Range(-magnitude, magnitude), 0).normalized;
 
-        StartCoroutine(WaitToSetDirection());
+        this.transform.DOLocalMove(randomDirection, this.Speed).SetSpeedBased().OnComplete(() =>
+        {
+            RandomMove();
+        });
     }
-
-    #region COROUTINES
-    private IEnumerator WaitToSetDirection()
-    {
-        yield return new WaitForSeconds(Delay);
-        SetDirection();
-    }
-    #endregion
 }

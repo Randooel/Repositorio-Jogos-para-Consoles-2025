@@ -1,0 +1,10 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMoveParticle
+
+
+[numthreads(8,8,1)]
+void CSMoveParticle (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+}

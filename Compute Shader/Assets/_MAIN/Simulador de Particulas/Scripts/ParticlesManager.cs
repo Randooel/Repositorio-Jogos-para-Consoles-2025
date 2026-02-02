@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using RangeAttribute = UnityEngine.RangeAttribute;
+using DG.Tweening;
 
 public class ParticlesManager : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class ParticlesManager : MonoBehaviour
     private void UsingCPU()
     {
         this._odinToggle = !this._odinToggle;
-        ActivateGPU();
+        MoveWithCPU();
     }
     #endregion
 
@@ -27,14 +28,13 @@ public class ParticlesManager : MonoBehaviour
     private void UsingGPU()
     {
         this._odinToggle = !this._odinToggle;
-        ActivateCPU();
+        MoveWithCPU();
     }
     #endregion
 
     #endregion
 
     #region Variables
-    [SerializeField, ReadOnly] private bool _moveWithCPU = true;
 
     #region Particles Config
     [Title("Particles Config")]
@@ -63,13 +63,11 @@ public class ParticlesManager : MonoBehaviour
     void Start()
     {
         SetParticlesQuantity();
+        MoveWithCPU();
     }
     void FixedUpdate()
     {
-        if(_moveWithCPU)
-        {
-            MoveWithCPU();
-        }
+        
     }
 
     #region Particles Quantity Related Functions
@@ -117,35 +115,19 @@ public class ParticlesManager : MonoBehaviour
     #endregion
 
     #region CPU vs GPU Related Functions
-    private void ActivateCPU()
-    {
-        _moveWithCPU = true; // Now, MoveWithCPU function will be called automatically by the FixedUpdate
-
-        foreach (var p in ParticlesList)
-        {
-            p.SetDirection();
-        }
-    }
-
-    private void ActivateGPU()
-    {
-        _moveWithCPU = false;
-
-        MoveWithGPU();
-    }
 
     #region Move Particles Functions
     private void MoveWithCPU()
     {
         foreach (var p in ParticlesList)
         {
-            p.transform.position += p.Direction * p.Speed * Time.deltaTime;
+            p.RandomMove();
         }
     }
 
     private void MoveWithGPU()
     {
-        
+
     }
     #endregion
     #endregion
