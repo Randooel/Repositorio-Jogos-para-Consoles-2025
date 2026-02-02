@@ -826,22 +826,24 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Android: SORTIFY
-    EmbeddedLinux: SORTIFY
-    GameCoreScarlett: SORTIFY
-    GameCoreXboxOne: SORTIFY
-    Kepler: SORTIFY
-    LinuxHeadlessSimulation: SORTIFY
-    Nintendo Switch: SORTIFY
-    PS4: SORTIFY
-    PS5: SORTIFY
-    QNX: SORTIFY
-    ReservedCFE: SORTIFY
-    Standalone: SORTIFY;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3
-    VisionOS: SORTIFY
-    WebGL: SORTIFY
-    XboxOne: SORTIFY
-    tvOS: SORTIFY
+    Android: SORTIFY;DOTWEEN
+    EmbeddedLinux: SORTIFY;DOTWEEN
+    GameCoreScarlett: SORTIFY;DOTWEEN
+    GameCoreXboxOne: SORTIFY;DOTWEEN
+    Kepler: SORTIFY;DOTWEEN
+    LinuxHeadlessSimulation: SORTIFY;DOTWEEN
+    Nintendo Switch: SORTIFY;DOTWEEN
+    PS4: SORTIFY;DOTWEEN
+    PS5: SORTIFY;DOTWEEN
+    QNX: SORTIFY;DOTWEEN
+    ReservedCFE: SORTIFY;DOTWEEN
+    Standalone: SORTIFY;ODIN_INSPECTOR;ODIN_INSPECTOR_3;ODIN_INSPECTOR_3_1;ODIN_INSPECTOR_3_2;ODIN_INSPECTOR_3_3;DOTWEEN
+    VisionOS: SORTIFY;DOTWEEN
+    WebGL: SORTIFY;DOTWEEN
+    Windows Store Apps: DOTWEEN
+    XboxOne: SORTIFY;DOTWEEN
+    iPhone: DOTWEEN
+    tvOS: SORTIFY;DOTWEEN
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
