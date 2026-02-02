@@ -10,10 +10,10 @@ public class ParticleClass : MonoBehaviour
 
     [Title("Transform Related")]
     public Vector3 Position;
-    [Range(1, 300)] public float Speed = 1;
+    [Range(1, 300)] public float Speed = 10f;
     public float Acceleration;
     [ReadOnly] public Vector3 Direction;
-    public float Delay = 30f;
+    public float Delay = 60f;
     #endregion
 
 

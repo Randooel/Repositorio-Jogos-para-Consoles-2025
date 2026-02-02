@@ -139,7 +139,7 @@ public class ParticlesManager : MonoBehaviour
     {
         foreach (var p in ParticlesList)
         {
-            p.transform.position += p.Direction * (p.Speed * 10) * Time.deltaTime;
+            p.transform.position += p.Direction * p.Speed * Time.deltaTime;
         }
     }
 
