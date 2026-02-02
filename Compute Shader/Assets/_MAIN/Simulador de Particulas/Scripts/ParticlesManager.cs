@@ -6,15 +6,6 @@ using RangeAttribute = UnityEngine.RangeAttribute;
 
 public class ParticlesManager : MonoBehaviour
 {
-    #region Odin Inspector Buttons
-    [PropertyOrder(1), PropertySpace(SpaceBefore = 10, SpaceAfter = 10)]
-    [Button(ButtonSizes.Large)]
-    private void CallSetParticlesQuantity()
-    {
-        SetParticlesQuantity();
-    }
-    #endregion
-
     #region Variables
     [Title("Particles Config")]
     [Space(5)]
@@ -23,7 +14,12 @@ public class ParticlesManager : MonoBehaviour
 
     [Space(15)]
     [PropertyOrder(0)] [SerializeField, ReadOnly] private int _currentParticles;
+    [InlineButton("RefreshParticleQuantity")]
     [PropertyOrder(0)] [Range(1, 1100)] public int MaxParticles;
+    private void RefreshParticleQuantity()
+    {
+        SetParticlesQuantity();
+    }
 
 
     [Title("Particles List")]
@@ -57,19 +53,18 @@ public class ParticlesManager : MonoBehaviour
         // Se tem menos partículas do que o máximo
         else if(ParticlesList.Count > MaxParticles)
         {
-            Debug.LogError("ELSE IF");
             // I é igual a quantidade de partículas e vai removendo itens da lista e os destruindo até ser <= MaxParticles
-            for(int i = ParticlesList.Count; i > MaxParticles; i--)
+            for(int i = ParticlesList.Count - 1; i >= MaxParticles; i--)
             {
                 var p = ParticlesList[i]; // Referência simplificada ao elemento atual da ParticleList
                 ParticlesList.Remove(p); // Remove da lista
-                Destroy(p); // Destrói instância
+                Destroy(p.gameObject); // Destrói instância
             }
         }
 
         // Informa a quantiadade de partículas, após as operações acima
         _currentParticles = ParticlesList.Count;
-        Debug.Log("Particle Quantity = " + ParticlesList.Count);
+        //Debug.Log("Particle Quantity = " + ParticlesList.Count);
     }
 
     private int CheckDifference()
