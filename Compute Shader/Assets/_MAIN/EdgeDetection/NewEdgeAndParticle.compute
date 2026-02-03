@@ -1,0 +1,51 @@
+#pragma kernel CSControl
+#pragma kernel CSEdgeDetection
+
+Texture2D<float4> sourceImage;
+RWTexture2D<float4> Result;
+
+[numthreads(8,8,1)]
+void CSControl (uint3 id : SV_DispatchThreadID)
+{
+    float4 pixel = sourceImage[id.xy];
+    Result[id.xy] = pixel;
+}
+
+[numthreads(8, 8, 1)]
+void CSEdgeDetection (uint3 id : SV_DispatchThreadID)
+{
+    int2 size;
+    sourceImage.GetDimensions(size.x, size.y);
+
+    if (id.x <= 0 || id.y <= 0 || id.x >= size.x-1 || id.y >= size.y-1)
+    {
+        Result[id.xy] = float4(0,0,0,1);
+        return;
+    }
+
+    float3 Gx = float3(0,0,0);
+    float3 Gy = float3(0,0,0);
+
+    float kernelX[3][3] = { {-1,0,1}, {-2,0,2}, {-1,0,1} };
+    float kernelY[3][3] = { {-1,-2,-1}, {0,0,0}, {1,2,1} };
+
+    for (int y=-1; y<=1; y++)
+    {
+        for (int x=-1; x<=1; x++)
+        {
+            float3 color = sourceImage[id.xy + int2(x,y)].rgb;
+            Gx += color * kernelX[y+1][x+1];
+            Gy += color * kernelY[y+1][x+1];
+        }
+    }
+
+    float3 edge = sqrt(Gx*Gx + Gy*Gy);
+    float intensity = dot(edge, float3(0.299,0.587,0.114));
+
+    intensity = saturate(intensity * 3.0);
+
+    float threshold = 0.2;
+    intensity = intensity > threshold ? intensity : 0.0;
+
+    Result[id.xy] = float4(intensity, intensity, intensity, 1.0);
+}
