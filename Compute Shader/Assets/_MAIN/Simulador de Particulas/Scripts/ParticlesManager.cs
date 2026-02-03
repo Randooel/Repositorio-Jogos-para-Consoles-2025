@@ -77,6 +77,10 @@ public class ParticlesManager : MonoBehaviour
         {
             MoveWithCPU();
         }
+        else
+        {
+            MoveWithGPU();
+        }
     }
 
     #region Particles Quantity Related Functions
@@ -132,8 +136,6 @@ public class ParticlesManager : MonoBehaviour
     private void ActivateGPU()
     {
         _moveWithCPU = false;
-
-        MoveWithGPU();
     }
 
     #region Move Particles Functions
@@ -175,7 +177,7 @@ public class ParticlesManager : MonoBehaviour
 
     private void MoveWithGPU()
     {
-        if (ParticlesList != null)
+        if (ParticlesList != null && ParticlesList.Count > 0)
         {
             int numParticlesList = ParticlesList.Count;
             ParticleData[] ParticleData = new ParticleData[numParticlesList];
@@ -189,14 +191,14 @@ public class ParticlesManager : MonoBehaviour
             var ParticleBuffer = new ComputeBuffer(numParticlesList, sizeof(float) * 3 * 5 + sizeof(int));
             ParticleBuffer.SetData(ParticleData);
 
-            compute.SetBuffer(0, "ParticlesList", ParticleBuffer);
-            compute.SetInt("numParticlesList", numParticlesList);
+            compute.SetBuffer(0, "Particles", ParticleBuffer);
+            compute.SetInt("numParticles", numParticlesList);
             compute.SetFloat("viewRadius", ParticlesList[0].perceptionRadius);
             compute.SetFloat("avoidRadius", ParticlesList[0].avoidanceRadius);
 
-            int threadGroups = Mathf.CeilToInt((float)ParticlesList.Count / threadGroupSize);
-
-            compute.Dispatch(0, threadGroups, 1, 1);
+            int threadGroups = Mathf.CeilToInt((float)numParticlesList / threadGroupSize);
+            var kernel = compute.FindKernel("MoveParticle");
+            compute.Dispatch(kernel, threadGroups, 1, 1);
 
             ParticleBuffer.GetData(ParticleData);
 
@@ -214,6 +216,7 @@ public class ParticlesManager : MonoBehaviour
         }
     }
     #endregion
+
     #endregion
 }
 
