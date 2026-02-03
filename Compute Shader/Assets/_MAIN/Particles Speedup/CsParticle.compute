@@ -1,4 +1,4 @@
-// Each #kernel tells which function to compile; you can have many kernels
+Boids// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
 // Create a RenderTexture with enableRandomWrite flag and set it

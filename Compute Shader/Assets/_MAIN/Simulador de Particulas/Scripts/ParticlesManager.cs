@@ -35,7 +35,10 @@ public class ParticlesManager : MonoBehaviour
     #endregion
 
     #region Variables
-    [SerializeField, ReadOnly] private bool _moveWithCPU = true;
+    [SerializeField, ReadOnly] private bool _moveWithCPU;
+
+    [PropertySpace(SpaceBefore = 10), SerializeField] const int threadGroupSize = 10;
+    [PropertySpace(SpaceAfter = 10)] public ComputeShader compute;
 
     #region Particles Config
     [Title("Particles Config")]
@@ -46,7 +49,10 @@ public class ParticlesManager : MonoBehaviour
     [Space(15)]
     [PropertyOrder(0)] [SerializeField, ReadOnly] private int _currentParticles;
     [InlineButton("RefreshParticleQuantity")]
-    [PropertyOrder(0)] [Range(1, 1100)] public int MaxParticles;
+    [PropertyOrder(0)][Range(1, 1100)] public int MaxParticles;
+
+    [Space(10)]
+    public ParticleData ParticleData;
     private void RefreshParticleQuantity()
     {
         SetParticlesQuantity();
@@ -133,53 +139,93 @@ public class ParticlesManager : MonoBehaviour
     #region Move Particles Functions
     private void MoveWithCPU()
     {
-        foreach (var p in ParticlesList)
+        if (ParticlesList != null)
         {
-            Transform t = p.transform;
-            var deslocation = p.Speed * Time.deltaTime;
-            t.Translate(new Vector3(deslocation, deslocation, deslocation));
-
-            // Checa colisão contra as paredes
-            if (t.position.x < p.minSpace.x || t.position.y > p.minSpace.y || t.position.z  < p.minSpace.z ||
-                t.position.x > p.maxSpace.x || t.position.y > p.maxSpace.y || t.position.z  > p.maxSpace.z)
+            for (int i = 0; i < ParticlesList.Count; i++)
             {
-                // Inverte a direção e rotaciona aleatoriamente
-                t.rotation = Quaternion.LookRotation(-t.forward);
-                t.Rotate(Vector3.up, Random.Range(-30f, 30f));
+                ParticlesList[i].numPerceivedFlockmates = 0;
+                ParticlesList[i].avgFlockHeading = Vector3.zero;
+                ParticlesList[i].centreOfFlockmates = Vector3.zero;
+                ParticlesList[i].avgAvoidanceHeading = Vector3.zero;
 
-                // Empurra um pouco para fora da parede para evitar prender
-                t.Translate(new Vector3(0, 0, 0.5f));
-            }
-
-            /*
-            // WIP: Checar colisão com obstáculos estáticos
-            foreach (Transform ss in ParticlesList)
-            {
-                Vector3 dir = t.position - ss.position;
-                dir.y = 0;
-                float distanceSqr = dir.sqrMagnitude;
-                float combinedRadius = staticSphereRadius + r;
-
-                // Usando sqrMagnitude para performance (compara com raio ao quadrado)
-                if (distanceSqr < combinedRadius * combinedRadius)
+                for (int j = 0; j < ParticlesList.Count; j++)
                 {
-                    // Rotaciona para olhar para longe da esfera estática
-                    t.rotation = Quaternion.LookRotation(dir.normalized);
+                    if (i != j)
+                    {
+                        ParticleClass neighborParticle = ParticlesList[j];
+                        Vector3 distance = neighborParticle.transform.position - ParticlesList[j].transform.position;
 
-                    // Reposiciona para fora da colisão
-                    float overlap = combinedRadius - Mathf.Sqrt(distanceSqr);
-                    t.Translate(new Vector3(0, 0, overlap));
-                    break;
+                        if (distance.magnitude < ParticlesList[i].perceptionRadius)
+                        {
+                            ParticlesList[i].numPerceivedFlockmates += 1;
+                            ParticlesList[i].avgFlockHeading += neighborParticle.transform.forward;
+                            ParticlesList[i].centreOfFlockmates += neighborParticle.transform.position;
+
+                            if (distance.magnitude < ParticlesList[i].avoidanceRadius)
+                            {
+                                ParticlesList[i].avgAvoidanceHeading -= distance / distance.magnitude;
+                            }
+                        }
+                    }
                 }
+                ParticlesList[i].UpdateParticle();
             }
-            */
         }
     }
 
     private void MoveWithGPU()
     {
-        
+        if (ParticlesList != null)
+        {
+            int numParticlesList = ParticlesList.Count;
+            ParticleData[] ParticleData = new ParticleData[numParticlesList];
+
+            for (int i = 0; i < numParticlesList; i++)
+            {
+                ParticleData[i].position = ParticlesList[i].transform.position;
+                ParticleData[i].direction = ParticlesList[i].transform.forward;
+            }
+
+            var ParticleBuffer = new ComputeBuffer(numParticlesList, sizeof(float) * 3 * 5 + sizeof(int));
+            ParticleBuffer.SetData(ParticleData);
+
+            compute.SetBuffer(0, "ParticlesList", ParticleBuffer);
+            compute.SetInt("numParticlesList", numParticlesList);
+            compute.SetFloat("viewRadius", ParticlesList[0].perceptionRadius);
+            compute.SetFloat("avoidRadius", ParticlesList[0].avoidanceRadius);
+
+            int threadGroups = Mathf.CeilToInt((float)ParticlesList.Count / threadGroupSize);
+
+            compute.Dispatch(0, threadGroups, 1, 1);
+
+            ParticleBuffer.GetData(ParticleData);
+
+            for (int i = 0; i < ParticlesList.Count; i++)
+            {
+                ParticlesList[i].avgFlockHeading = ParticleData[i].flockHeading;
+                ParticlesList[i].centreOfFlockmates = ParticleData[i].flockCentre;
+                ParticlesList[i].avgAvoidanceHeading = ParticleData[i].avoidanceHeading;
+                ParticlesList[i].numPerceivedFlockmates = ParticleData[i].numFlockmates;
+
+                ParticlesList[i].UpdateParticle();
+            }
+
+            ParticleBuffer.Release();
+        }
     }
     #endregion
     #endregion
+}
+
+
+
+public struct ParticleData
+{
+    public Vector3 position;
+    public Vector3 direction;
+
+    public Vector3 flockHeading;
+    public Vector3 flockCentre;
+    public Vector3 avoidanceHeading;
+    public int numFlockmates;
 }
