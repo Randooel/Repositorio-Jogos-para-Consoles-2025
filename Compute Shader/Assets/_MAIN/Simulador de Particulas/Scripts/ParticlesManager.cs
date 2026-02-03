@@ -40,6 +40,15 @@ public class ParticlesManager : MonoBehaviour
     [PropertySpace(SpaceBefore = 10), SerializeField] const int threadGroupSize = 10;
     [PropertySpace(SpaceAfter = 10)] public ComputeShader compute;
 
+    private float _cellSize = 2.5f;
+    private Dictionary<Vector3Int, List<ParticleClass>> _grid = new Dictionary<Vector3Int, List<ParticleClass>>();
+
+    #region Buffers Compute Shader
+    private ComputeBuffer _particlesBuffer;
+    private ComputeBuffer _sortedParticlesBuffer;
+    private ComputeBuffer _startIndicesBuffer;
+    #endregion
+
     #region Particles Config
     [Title("Particles Config")]
     [Space(5)]
@@ -75,11 +84,13 @@ public class ParticlesManager : MonoBehaviour
     {
         if(_moveWithCPU)
         {
-            MoveWithCPU();
+            //MoveWithCPU();
+            MoveWithCPUSpatial();
         }
         else
         {
-            MoveWithGPU();
+            //MoveWithGPU();
+            MoveWithGPUSpatial();
         }
     }
 
@@ -175,6 +186,65 @@ public class ParticlesManager : MonoBehaviour
         }
     }
 
+    private void MoveWithCPUSpatial()
+    {
+        _grid.Clear();
+        _cellSize = ParticlesList[0].perceptionRadius;
+
+        // 1. Registrar partículas na grade
+        foreach (var p in ParticlesList)
+        {
+            Vector3Int cell = Vector3Int.FloorToInt(p.transform.position / _cellSize);
+            if (!_grid.ContainsKey(cell)) _grid[cell] = new List<ParticleClass>();
+            _grid[cell].Add(p);
+        }
+
+        // 2. Calcular Boids olhando apenas vizinhos
+        foreach (var p in ParticlesList)
+        {
+            p.numPerceivedFlockmates = 0;
+            p.avgFlockHeading = Vector3.zero;
+            p.centreOfFlockmates = Vector3.zero;
+            p.avgAvoidanceHeading = Vector3.zero;
+
+            Vector3Int centerCell = Vector3Int.FloorToInt(p.transform.position / _cellSize);
+
+            // Olhar células vizinhas (3x3x3 = 27 células no máximo)
+            for (int x = -1; x <= 1; x++)
+            {
+                for (int y = -1; y <= 1; y++)
+                {
+                    for (int z = -1; z <= 1; z++)
+                    {
+                        Vector3Int neighborCell = centerCell + new Vector3Int(x, y, z);
+
+                        if (_grid.TryGetValue(neighborCell, out List<ParticleClass> neighbors))
+                        {
+                            foreach (var neighbor in neighbors)
+                            {
+                                if (p == neighbor) continue;
+
+                                Vector3 offset = neighbor.transform.position - p.transform.position;
+                                float distSq = offset.sqrMagnitude; // sqrMagnitude é mais rápido que magnitude
+
+                                if (distSq < p.perceptionRadius * p.perceptionRadius)
+                                {
+                                    p.numPerceivedFlockmates++;
+                                    p.avgFlockHeading += neighbor.transform.forward;
+                                    p.centreOfFlockmates += neighbor.transform.position;
+
+                                    if (distSq < p.avoidanceRadius * p.avoidanceRadius)
+                                        p.avgAvoidanceHeading -= offset / Mathf.Sqrt(distSq);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            p.UpdateParticle();
+        }
+    }
+
     private void MoveWithGPU()
     {
         if (ParticlesList != null && ParticlesList.Count > 0)
@@ -215,6 +285,86 @@ public class ParticlesManager : MonoBehaviour
             ParticleBuffer.Release();
         }
     }
+
+    private void MoveWithGPUSpatial()
+    {
+        if (ParticlesList == null || ParticlesList.Count == 0) return;
+
+        int num = ParticlesList.Count;
+        float cellSize = ParticlesList[0].perceptionRadius;
+
+        ParticleData[] rawData = new ParticleData[num];
+        ParticleLookup[] lookups = new ParticleLookup[num];
+        int[] startIndices = new int[num];
+
+        for (int i = 0; i < num; i++)
+        {
+            startIndices[i] = -1;
+            rawData[i].position = ParticlesList[i].transform.position;
+            rawData[i].direction = ParticlesList[i].transform.forward;
+
+            // Gerar Hash Espacial
+            Vector3Int cellCoord = Vector3Int.FloorToInt(rawData[i].position / cellSize);
+            uint hash = (uint)((cellCoord.x * 73856093) ^ (cellCoord.y * 19349663) ^ (cellCoord.z * 83492791)) % (uint)num;
+
+            lookups[i] = new ParticleLookup { cellHash = hash, particleIndex = (uint)i };
+        }
+
+        // Ordena por hash
+        System.Array.Sort(lookups, (a, b) => a.cellHash.CompareTo(b.cellHash));
+
+        ParticleData[] sortedData = new ParticleData[num];
+        for (int i = 0; i < num; i++)
+        {
+            sortedData[i] = rawData[lookups[i].particleIndex];
+
+            // Registra posição inical de cada célula no grid
+            uint key = lookups[i].cellHash;
+            if (i == 0 || key != lookups[i - 1].cellHash)
+            {
+                startIndices[key] = i;
+            }
+        }
+
+        // Configura os buffers
+        _particlesBuffer = new ComputeBuffer(num, sizeof(float) * 3 * 5 + sizeof(int));
+        _sortedParticlesBuffer = new ComputeBuffer(num, sizeof(float) * 3 * 5 + sizeof(int));
+        _startIndicesBuffer = new ComputeBuffer(num, sizeof(int));
+
+        _particlesBuffer.SetData(rawData);
+        _sortedParticlesBuffer.SetData(sortedData);
+        _startIndicesBuffer.SetData(startIndices);
+
+        int kernel = compute.FindKernel("MoveParticle");
+        compute.SetBuffer(kernel, "Particles", _particlesBuffer);
+        compute.SetBuffer(kernel, "SortedParticles", _sortedParticlesBuffer);
+        compute.SetBuffer(kernel, "StartIndices", _startIndicesBuffer);
+
+        compute.SetInt("numParticles", num);
+        compute.SetFloat("viewRadius", cellSize);
+        compute.SetFloat("avoidRadius", ParticlesList[0].avoidanceRadius);
+        compute.SetFloat("cellSize", cellSize);
+
+        // Chama o kernel
+        int threadGroups = Mathf.CeilToInt((float)num / threadGroupSize);
+        compute.Dispatch(kernel, threadGroups, 1, 1);
+
+        // Recupera e atualiza os dados
+        _particlesBuffer.GetData(rawData);
+        for (int i = 0; i < num; i++)
+        {
+            ParticlesList[i].avgFlockHeading = rawData[i].flockHeading;
+            ParticlesList[i].centreOfFlockmates = rawData[i].flockCentre;
+            ParticlesList[i].avgAvoidanceHeading = rawData[i].avoidanceHeading;
+            ParticlesList[i].numPerceivedFlockmates = rawData[i].numFlockmates;
+            ParticlesList[i].UpdateParticle();
+        }
+
+        // Limpa os buffers
+        _particlesBuffer.Release();
+        _sortedParticlesBuffer.Release();
+        _startIndicesBuffer.Release();
+    }
     #endregion
 
     #endregion
@@ -231,4 +381,10 @@ public struct ParticleData
     public Vector3 flockCentre;
     public Vector3 avoidanceHeading;
     public int numFlockmates;
+}
+
+public struct ParticleLookup
+{
+    public uint cellHash;
+    public uint particleIndex;
 }

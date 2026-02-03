@@ -1,0 +1,85 @@
+#pragma kernel MoveParticle
+
+struct Particle
+{
+    float3 position;
+    float3 direction;
+    float3 flockHeading;
+    float3 flockCentre;
+    float3 avoidanceHeading;
+    int numFlockmates;
+};
+
+// Buffers da Estrutura Espacial
+RWStructuredBuffer<Particle> Particles;
+StructuredBuffer<Particle> SortedParticles;
+StructuredBuffer<int> StartIndices;
+
+int numParticles;
+float viewRadius;
+float avoidRadius;
+float cellSize;
+
+uint GetCellKey(int3 cellCoord)
+{
+    uint h = (uint)((cellCoord.x * 73856093) ^ (cellCoord.y * 19349663) ^ (cellCoord.z * 83492791));
+    return h % numParticles;
+}
+
+[numthreads(64, 1, 1)]
+void MoveParticle (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= numParticles) return;
+
+    // Reseta acumuladores da execução atual
+    Particles[id.x].numFlockmates = 0;
+    Particles[id.x].flockHeading = float3(0, 0, 0);
+    Particles[id.x].flockCentre = float3(0, 0, 0);
+    Particles[id.x].avoidanceHeading = float3(0, 0, 0);
+
+    float3 pos = Particles[id.x].position;
+    int3 centerCell = floor(pos / cellSize);
+
+    // Olha apenas as células vizinhas
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int z = -1; z <= 1; z++)
+            {
+                uint key = GetCellKey(centerCell + int3(x, y, z));
+                int startIndex = StartIndices[key];
+
+                // Se a célula não estiver vazia
+                if (startIndex != -1)
+                {
+                    // Percorre o buffer ordenado a partir do início da célula
+                    for (uint i = startIndex; i < numParticles; i++)
+                    {
+                        Particle neighbor = SortedParticles[i];
+                        
+                        if (GetCellKey(floor(neighbor.position / cellSize)) != key) break;
+
+                        // Ignorar a si mesma
+                        if (distance(pos, neighbor.position) < 0.001f) continue;
+
+                        float3 offset = neighbor.position - pos;
+                        float distSq = dot(offset, offset);
+
+                        if (distSq < viewRadius * viewRadius)
+                        {
+                            Particles[id.x].numFlockmates += 1;
+                            Particles[id.x].flockHeading += neighbor.direction;
+                            Particles[id.x].flockCentre += neighbor.position;
+
+                            if (distSq < avoidRadius * avoidRadius)
+                            {
+                                Particles[id.x].avoidanceHeading -= offset / sqrt(distSq);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
