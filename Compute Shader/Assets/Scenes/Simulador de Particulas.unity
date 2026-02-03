@@ -658,6 +658,10 @@ PrefabInstance:
       value: ParticlesManager
       objectReference: {fileID: 0}
     - target: {fileID: 7733973840331540435, guid: 073e71f588699a449a9ad8347af1812c, type: 3}
+      propertyPath: compute
+      value: 
+      objectReference: {fileID: 7200000, guid: 2b460a04104f8b84591af77a56cd7ba1, type: 3}
+    - target: {fileID: 7733973840331540435, guid: 073e71f588699a449a9ad8347af1812c, type: 3}
       propertyPath: ParticleParent
       value: 
       objectReference: {fileID: 1409489371921274992}

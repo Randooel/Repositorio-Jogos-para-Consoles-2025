@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticlesManager
   _moveWithCPU: 1
-  compute: {fileID: 7200000, guid: 2b460a04104f8b84591af77a56cd7ba1, type: 3}
+  compute: {fileID: 0}
   ParticleParent: {fileID: 0}
   ParticlePrefab: {fileID: 0}
   _currentParticles: 0
